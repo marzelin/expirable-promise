@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    // for tree shaking
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    // import helpers from tslib to remove duplication
+    "noEmitHelpers": true,
+    "importHelpers": true,
+    "jsx": "react",
+    "jsxFactory": "createElement",
+    "lib": [
+      "dom",
+      "es2017"
+    ],
+    // more rigorous rules
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
