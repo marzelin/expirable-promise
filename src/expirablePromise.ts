@@ -6,15 +6,20 @@ interface Iparams {
 const expirablePromiseProvider = (
   { nextId, hasExpired }: Iparams = idProvider(),
 ) => (promise: Promise<any>, id = nextId()) => promise.then(
-(value) =>
-  hasExpired(id)
-    ? Promise.reject({ expired: true, id, message: "expired"})
-    : value,
-(error) =>
-  hasExpired(id)
-    ? Promise.reject({ expired: true, id, message: "expired"})
-    : Promise.reject(error),
-)
+(value) => {
+  throwIfExpired(hasExpired, id)
+  return value
+},
+(error) => {
+  throwIfExpired(hasExpired, id)
+  throw error
+})
+
+const throwIfExpired = (hasExpired: (id: number) => boolean, id: number) => {
+  if ( hasExpired(id) ) {
+    throw { expired: true, id, message: "expired"}
+  }
+}
 
 const idProvider = (lastResolvedId = 0, idIterator = idGenerator()) => ({
   hasExpired: (id: number) => id < lastResolvedId
