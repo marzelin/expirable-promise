@@ -1,36 +1,36 @@
-interface Iparams {
-  nextId: () => number
-  hasExpired: (id: number) => boolean
+interface IexpirationServices {
+  assignId: () => number
+  rejectIfExpired: (id: number) => boolean
 }
 
-const expirablePromiseProvider = (
-  { nextId, hasExpired }: Iparams = idProvider(),
-) => (promise: Promise<any>, id = nextId()) => promise.then(
-(value) => {
-  throwIfExpired(hasExpired, id)
-  return value
-},
-(error) => {
-  throwIfExpired(hasExpired, id)
-  throw error
-})
+const expirablePromiseCreator =
+  ({ assignId, rejectIfExpired }: IexpirationServices = expirationInspector()) =>
+  (promise: Promise<any>, id = assignId()) =>
+  promise.then(
+    (value) => {
+      rejectIfExpired(id)
+      return value
+    },
+    (error) => {
+      rejectIfExpired(id) // if promise has expired the underlying error will be omitted
+      throw error
+    },
+  )
 
-const throwIfExpired = (hasExpired: (id: number) => boolean, id: number) => {
-  if ( hasExpired(id) ) {
-    throw { expired: true, id, message: "expired"}
-  }
-}
-
-const idProvider = (lastResolvedId = 0, idIterator = idGenerator()) => ({
-  hasExpired: (id: number) => id < lastResolvedId
-    ? true
-    : (lastResolvedId = id, false),
-  nextId: () => idIterator.next().value,
+const expirationInspector = (lastResolvedId = 0, idIterator = idGenerator()) => ({
+  assignId: () => idIterator.next().value,
+  rejectIfExpired: (id: number) => {
+    if (id < lastResolvedId) {
+      throw { expired: true, id, message: "expired"}
+    }
+    lastResolvedId = id
+    return false
+  },
 })
 
 function* idGenerator(id = 0) { while (true) { yield ++id }}
 
 export {
-  expirablePromiseProvider,
-  expirablePromiseProvider as default
+  expirablePromiseCreator,
+  expirablePromiseCreator as default
 }
