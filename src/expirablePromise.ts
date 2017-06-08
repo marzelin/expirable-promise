@@ -28,7 +28,7 @@ const expirationInspector = (lastResolvedId = 0, idIterator = idGenerator()) => 
   },
 })
 
-function* idGenerator(id = 0) { while (true) { yield ++id }}
+const idGenerator = (id = 0) => ({ next: () => ({ value: ++id }) })
 
 export {
   expirablePromiseCreator,
